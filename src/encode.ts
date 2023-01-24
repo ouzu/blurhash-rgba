@@ -1,4 +1,4 @@
-type FourNumbers = [number, number, number, number];
+import { Buffer } from "buffer";
 
 const bytesPerPixel = 4;
 
@@ -7,7 +7,7 @@ const multiplyBasisFunction = (
   width: number,
   height: number,
   basisFunction: (i: number, j: number) => number
-): FourNumbers => {
+): [number, number, number, number] => {
   let r = 0;
   let g = 0;
   let b = 0;
@@ -39,7 +39,7 @@ const encode = (
   componentX: number,
   componentY: number
 ): string => {
-  let factors: Array<FourNumbers> = [];
+  let components: Array<number> = [];
   for (let y = 0; y < componentY; y++) {
     for (let x = 0; x < componentX; x++) {
       const normalisation = x == 0 && y == 0 ? 1 : 2;
@@ -52,11 +52,13 @@ const encode = (
           Math.cos((Math.PI * x * i) / width) *
           Math.cos((Math.PI * y * j) / height)
       );
-      factors.push(factor);
+      components.push(...factor);
     }
   }
 
-  return btoa(JSON.stringify(factors));
+  const normalized = new Uint8ClampedArray(components.map((x) => (x + 255) / 2));
+
+  return Buffer.from(normalized).toString("base64");
 };
 
 export default encode;

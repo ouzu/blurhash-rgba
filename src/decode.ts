@@ -1,3 +1,5 @@
+import { Buffer } from "buffer";
+
 const decode = (
   blurhash: string,
   width: number,
@@ -5,7 +7,8 @@ const decode = (
   componentX: number,
   componentY: number
 ) => {
-  const colors = JSON.parse(atob(blurhash));
+  const normalized = Array.from(Buffer.from(blurhash, "base64"));
+  const components = normalized.map((x) =>  x * 2 - 255);
 
   const bytesPerRow = width * 4;
   const pixels = new Uint8ClampedArray(bytesPerRow * height);
@@ -22,11 +25,11 @@ const decode = (
           const basis =
             Math.cos((Math.PI * x * i) / width) *
             Math.cos((Math.PI * y * j) / height);
-          let color = colors[i + j * componentX];
-          r += color[0] * basis;
-          g += color[1] * basis;
-          b += color[2] * basis;
-          a += color[3] * basis;
+          let offset = (i + j * componentX) * 4;
+          r += components[offset] * basis;
+          g += components[offset + 1] * basis;
+          b += components[offset + 2] * basis;
+          a += components[offset + 3] * basis;
         }
       }
 
